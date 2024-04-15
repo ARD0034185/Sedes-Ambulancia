@@ -5,7 +5,7 @@ const MysqlConnection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '0000',
-    database: 'dbAmbulancia'
+    database: 'dbsedes_ambulancia'
 });
 
 // Conectar a la base de datos

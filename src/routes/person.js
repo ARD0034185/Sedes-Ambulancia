@@ -1,14 +1,14 @@
 const { Router } = require('express');
 const router = Router();
-
+ 
 const MysqlConnection = require('../database/database');
-
+ 
 router.get('/', (req, res) => {
     res.status(200).json('Server on port 9090 and database is connected');
 });
-
+ 
 router.get('/persona', (req, res) => {
-    MysqlConnection.query('SELECT * FROM persona;', (error, rows, fields) => {
+    MysqlConnection.query('SELECT * FROM Persona WHERE status = 1;', (error, rows, fields) => {
         if (!error) {
             res.json(rows);
         } else {
@@ -17,10 +17,10 @@ router.get('/persona', (req, res) => {
         }
     });
 });
-
+ 
 router.get('/persona/:id', (req, res) => {
     const { id } = req.params;
-    MysqlConnection.query('SELECT * FROM persona WHERE id = ?;', [id], (error, rows, fields) => {
+    MysqlConnection.query('SELECT * FROM Persona WHERE id = ? AND status = 1;', [id], (error, rows, fields) => {
         if (!error && rows.length > 0) {
             res.json(rows[0]);
         } else if (!error && rows.length === 0) {
@@ -31,11 +31,11 @@ router.get('/persona/:id', (req, res) => {
         }
     });
 });
-
-router.post('/:persona', (req, res) => {
+ 
+router.post('/persona', (req, res) => {
     const { nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId } = req.body;
-    MysqlConnection.query('INSERT INTO persona(nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
-        [nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId], (error, result) => {
+    MysqlConnection.query('INSERT INTO Persona(nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);',
+        [nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId, 1], (error, result) => {
             if (!error) {
                 res.status(201).json({ Status: 'Person saved', id: result.insertId });
             } else {
@@ -44,11 +44,11 @@ router.post('/:persona', (req, res) => {
             }
         });
 });
-
+ 
 router.put('/persona/:id', (req, res) => {
     const { id } = req.params;
     const { nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId } = req.body;
-    MysqlConnection.query('UPDATE persona SET nombres = ?, primerApellido = ?, segundoApellido = ?, carnet = ?, fechaNacimiento = ?, direccion = ?, celular = ?, lastUpdate = CURRENT_TIMESTAMP, UserId = ? WHERE id = ?;',
+    MysqlConnection.query('UPDATE Persona SET nombres = ?, primerApellido = ?, segundoApellido = ?, carnet = ?, fechaNacimiento = ?, direccion = ?, celular = ?, lastUpdate = CURRENT_TIMESTAMP, UserId = ? WHERE id = ? AND status = 1;',
         [nombres, primerApellido, segundoApellido, carnet, fechaNacimiento, direccion, celular, UserId, id], (error, result) => {
             if (!error && result.affectedRows > 0) {
                 res.json({ Status: 'Person updated' });
@@ -60,10 +60,10 @@ router.put('/persona/:id', (req, res) => {
             }
         });
 });
-
+ 
 router.delete('/persona/:id', (req, res) => {
     const { id } = req.params;
-    MysqlConnection.query('DELETE FROM persona WHERE id = ?;', [id], (error, result) => {
+    MysqlConnection.query('UPDATE Persona SET status = 0 WHERE id = ?;', [id], (error, result) => {
         if (!error && result.affectedRows > 0) {
             res.json({ Status: 'Person deleted' });
         } else if (!error && result.affectedRows === 0) {
@@ -74,5 +74,5 @@ router.delete('/persona/:id', (req, res) => {
         }
     });
 });
-
+ 
 module.exports = router;

@@ -1,14 +1,14 @@
 const { Router } = require('express');
 const router = Router();
-
+ 
 const MysqlConnection = require('../database/database');
-
+ 
 router.get('/', (req, res) => {
     res.status(200).json('Server on port 9090 and database is connected');
 });
-
+ 
 router.get('/ambulancia', (req, res) => {
-    MysqlConnection.query('SELECT * FROM ambulancia;', (error, rows, fields) => {
+    MysqlConnection.query('SELECT * FROM Ambulancia WHERE status = 1;', (error, rows, fields) => {
         if (!error) {
             res.json(rows);
         } else {
@@ -17,10 +17,10 @@ router.get('/ambulancia', (req, res) => {
         }
     });
 });
-
+ 
 router.get('/ambulancia/:id', (req, res) => {
     const { id } = req.params;
-    MysqlConnection.query('SELECT * FROM ambulancia WHERE id = ?;', [id], (error, rows, fields) => {
+    MysqlConnection.query('SELECT * FROM Ambulancia WHERE id = ? AND status = 1;', [id], (error, rows, fields) => {
         if (!error && rows.length > 0) {
             res.json(rows[0]);
         } else if (!error && rows.length === 0) {
@@ -31,11 +31,11 @@ router.get('/ambulancia/:id', (req, res) => {
         }
     });
 });
-
+ 
 router.post('/ambulancia', (req, res) => {
     const { numero_placa, modelo, conductor_id, UserId } = req.body;
-    MysqlConnection.query('INSERT INTO ambulancia(numero_placa, modelo, conductor_id, UserId) VALUES (?, ?, ?, ?);',
-        [numero_placa, modelo, conductor_id, UserId], (error, result) => {
+    MysqlConnection.query('INSERT INTO Ambulancia(numero_placa, modelo, conductor_id, UserId, status) VALUES (?, ?, ?, ?, ?);',
+        [numero_placa, modelo, conductor_id, UserId, 1], (error, result) => {
             if (!error) {
                 res.status(201).json({ Status: 'Ambulance saved', id: result.insertId });
             } else {
@@ -44,11 +44,11 @@ router.post('/ambulancia', (req, res) => {
             }
         });
 });
-
+ 
 router.put('/ambulancia/:id', (req, res) => {
     const { numero_placa, modelo, conductor_id, UserId } = req.body;
     const { id } = req.params;
-    MysqlConnection.query('UPDATE ambulancia SET numero_placa = ?, modelo = ?, conductor_id = ?, UserId = ? WHERE id = ?;',
+    MysqlConnection.query('UPDATE Ambulancia SET numero_placa = ?, modelo = ?, conductor_id = ?, UserId = ?, lastUpdate = CURRENT_TIMESTAMP WHERE id = ? AND status = 1;',
         [numero_placa, modelo, conductor_id, UserId, id], (error, result) => {
             if (!error && result.affectedRows > 0) {
                 res.json({ Status: 'Ambulance updated' });
@@ -60,10 +60,10 @@ router.put('/ambulancia/:id', (req, res) => {
             }
         });
 });
-
+ 
 router.delete('/ambulancia/:id', (req, res) => {
     const { id } = req.params;
-    MysqlConnection.query('DELETE FROM ambulancia WHERE id = ?;', [id], (error, result) => {
+    MysqlConnection.query('UPDATE Ambulancia SET status = 0 WHERE id = ?;', [id], (error, result) => {
         if (!error && result.affectedRows > 0) {
             res.json({ Status: 'Ambulance deleted' });
         } else if (!error && result.affectedRows === 0) {
@@ -74,5 +74,5 @@ router.delete('/ambulancia/:id', (req, res) => {
         }
     });
 });
-
+ 
 module.exports = router;
